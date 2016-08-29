@@ -33,8 +33,8 @@ void match(tokenType hope)
 	else
 	{
 		printf("Couldn't parse input - expected %s at token %d, found %s\n", typeNames[hope], streamPointer, typeNames[LOOKAHEADTYPE]);
-		clearSTable();
-		freeStream(stream);
+		freeAll();
+		free(stream);
 		exit(0);
 	}
 }

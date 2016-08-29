@@ -32,82 +32,44 @@ token** lex()
 
 		if (isspace(c)) continue;
 
-		if (isalpha(c))
-		{
-			char name[MAXNAMELENGTH + 1];
-			name[0] = c;
+		char name[MAXNAMELENGTH + 1];
+		name[0] = c;
 
-			int nPointer;
-			for (nPointer = 1; isalpha(c = getc(stdin)) && nPointer < MAXNAMELENGTH; nPointer++)
-				name[nPointer] = c;
-			name[nPointer] = '\0';
+		int nPointer;
+		for (nPointer = 1; isalpha(c = getc(stdin)) && nPointer < MAXNAMELENGTH; nPointer++)
+			name[nPointer] = c;
+		name[nPointer] = '\0';
 
-			//consume remaining characters if the identifier is too long
-			while (isalpha(c)) c = getc(stdin);
+		//consume remaining characters if the identifier is too long
+		while (!isspace(c)) c = getc(stdin);
+		ungetc(c, stdin);
 
-			//ask the symbol table for a token for this identifier
-			stream[streamPointer++] = createIdentifier(name);
-			tokensRemaining--;
-            if (c == '\n') break;
-
-           	ungetc(c, stdin);
-			continue;
-
-		}
-
-		token* new = malloc(sizeof(token));
-
-		switch (c)
-		{
-			case '&':
-				new->type = AND;
-				break;
-
-			case '+':
-				new->type = OR;
-				break;
-
-			case '~':
-				new->type = NOT;
-				break;
-
-			case '(':
-				new->type = LPAR;
-				break;
-
-			case ')':
-				new->type = RPAR;
-				break;
-
-			default:
-				printf("Syntax error: did not expect '%c' (ASCII %d)\n", c, c);
-				return NULL;
-		}
-
-		stream[streamPointer++] = new;
-
+		//ask the symbol table for a token for this lexeme
+		stream[streamPointer++] = createIdentifier(name);
 		tokensRemaining--;
-
 	}
 
-	token* eos = malloc(sizeof(token));
-	eos->type = EOS;
+	if (!tokensRemaining)
+	{
+		//we need one more token* for the EOS
+		if ((stream = realloc(stream, (chunks * CHUNKLENGTH) * sizeof(token*)+ 1)) == NULL)
+		{
+			fprintf(stderr, "Failed to extend allocated memory for the EOS token!\n");
+			free(stream);
+			freeAll();
+			exit(-1);
+		}
+	}
+
+	if (eos == NULL)
+	{
+		eos = malloc(sizeof(token));
+		eos->type = EOS;
+	}
+
 	stream[streamPointer] = eos;
 
 	return stream;
-}
-
-void freeStream(token** stream)
-{
-	//the stream returned by lex will always have at least one token (EOS)
-	int i = 0;
-	tokenType lastToken;
-	do
-	{
-		lastToken = stream[i]->type;
-		free(stream[i]->name);
-		free(stream[i++]);
-	} while (lastToken != EOS);
 }
 
 void printStream(token** stream)

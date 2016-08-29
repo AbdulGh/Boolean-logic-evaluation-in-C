@@ -6,8 +6,7 @@
 #define MAXNAMELENGTH 8
 
 token** lex();
-
-void freeStream(token** stream);
+token* eos;
 void printStream(token** stream);
 
 

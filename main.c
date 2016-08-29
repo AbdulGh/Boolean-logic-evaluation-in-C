@@ -8,8 +8,10 @@
 
 int main()
 {
-	printf("Please type out a boolean expression using &, +, ~, and variable names with fewer than %d letters. Press enter when done.\n",
+	printf("Please type out a boolean expression using variable names with fewer than %d letters. Press enter when done.\n",
 		MAXNAMELENGTH);
+
+	if (!initSTable()) return -1;
 
 	token** stream = lex();
 
@@ -17,8 +19,8 @@ int main()
 
 	printf("This statement is %s\n", evaluate(stream) ? "true" : "false");
 
-	freeStream(stream);
-	clearSTable();
-
+	freeAll();
+	free(stream);
+	
 	return 0;
 }
