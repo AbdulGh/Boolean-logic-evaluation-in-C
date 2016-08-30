@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "token.h"
+
+#include "symbol.h"
 #include "lex.h"
 
 #define SYMBOLSCHUNKSIZE 8
@@ -11,12 +12,6 @@ static int symbolsRemaining = 0;
 static int symbolPointerChunks = 0;
 static int symbolPointerIndex = 0;
 static token** symbols = NULL;
-
-static token* and;
-static token* or;
-static token* not;
-static token* lpar;
-static token* rpar;
 
 int initSTable()
 {
@@ -30,31 +25,31 @@ int initSTable()
 		return 0;
 	}
 
-	and = malloc(sizeof(token*));
+	and = malloc(sizeof(token));
 	and->name = malloc(sizeof(char) * 4);
 	strcpy(and->name, "and");
 	and->type = AND;
 	symbols[0] = and;
 
-	or = malloc(sizeof(token*));
+	or = malloc(sizeof(token));
 	or->name = malloc(sizeof(char) * 3);
 	strcpy(or->name, "or");
 	or->type = OR;
 	symbols[1] = or;
 
-	not = malloc(sizeof(token*));
+	not = malloc(sizeof(token));
 	not->name = malloc(sizeof(char) * 4);
 	strcpy(not->name, "not");
 	not->type = NOT;
 	symbols[2] = not;
 
-	lpar = malloc(sizeof(token*));
+	lpar = malloc(sizeof(token));
 	lpar->name = malloc(sizeof(char) * 2);
 	strcpy(lpar->name, "(");
 	lpar->type = LPAR;
 	symbols[3] = lpar;
 
-	rpar = malloc(sizeof(token*));
+	rpar = malloc(sizeof(token));
 	rpar->name = malloc(sizeof(char) * 2);
 	strcpy(rpar->name, "");
 	rpar->type = RPAR;
@@ -64,23 +59,6 @@ int initSTable()
 
 token* createIdentifier(char name[])
 {
-	//check if it's an operator
-	if (strlen(name) == 1)
-	{
-		switch (name[0])
-		{
-			case '+': case '|':
-				return or;
-				break;
-			case '&': case '^':
-				return and;
-				break;
-			case '!': case '~':
-				return not;
-				break;
-		}
-	}
-
 	//check if it's already in the table
 	int searchPointer;
 	for (searchPointer = 0; searchPointer < symbolPointerIndex; searchPointer++)

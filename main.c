@@ -15,6 +15,8 @@ int main()
 
 	token** stream = lex();
 
+	//printStream(stream);
+
 	assignVariables();
 
 	printf("This statement is %s\n", evaluate(stream) ? "true" : "false");

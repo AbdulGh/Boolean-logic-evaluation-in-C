@@ -15,10 +15,9 @@ token** lex()
 	token** stream = malloc(sizeof(token*) * CHUNKLENGTH);
 
 	char c;
-
-	while ((c = getc(stdin)) != '\n')
+	while (1)
 	{
-
+		c = getc(stdin);
 		if (!tokensRemaining)
 		{
 			if ((stream = realloc(stream, (++chunks * CHUNKLENGTH) * sizeof(token*))) == NULL)
@@ -29,19 +28,49 @@ token** lex()
 			}
 			tokensRemaining = CHUNKLENGTH;
 		}
+		
+		//check if it's an operator or newline
+		switch (c)
+		{
+			case '+': case '|':
+				stream[streamPointer++] = or;
+				tokensRemaining--;
+				continue;
+			case '&': case '^':
+				stream[streamPointer++] = and;
+				tokensRemaining--;
+				continue;
+			case '!': case '~':
+				stream[streamPointer++] = not;
+				tokensRemaining--;
+				continue;
+			case '(':
+				stream[streamPointer++] = lpar;
+				tokensRemaining--;
+				continue;
+			case ')':
+				stream[streamPointer++] = rpar;
+				tokensRemaining--;
+				continue;
+			case '\n':
+				eos = malloc(sizeof(token));
+				eos->type = EOS;
+				stream[streamPointer] = eos;
+				return stream;
+		}
 
 		if (isspace(c)) continue;
 
 		char name[MAXNAMELENGTH + 1];
 		name[0] = c;
 
-		int nPointer;
-		for (nPointer = 1; isalpha(c = getc(stdin)) && nPointer < MAXNAMELENGTH; nPointer++)
-			name[nPointer] = c;
-		name[nPointer] = '\0';
+		int npointer;
+		for (npointer = 1; isalpha(c = getc(stdin)) && npointer < MAXNAMELENGTH; npointer++)
+			name[npointer] = c;
+		name[npointer] = '\0';
 
-		//consume remaining characters if the identifier is too long
-		while (!isspace(c)) c = getc(stdin);
+		//consume the rest of the name, if there's any left
+		while (isalpha(c)) c = getc(stdin);
 		ungetc(c, stdin);
 
 		//ask the symbol table for a token for this lexeme
@@ -60,16 +89,6 @@ token** lex()
 			exit(-1);
 		}
 	}
-
-	if (eos == NULL)
-	{
-		eos = malloc(sizeof(token));
-		eos->type = EOS;
-	}
-
-	stream[streamPointer] = eos;
-
-	return stream;
 }
 
 void printStream(token** stream)

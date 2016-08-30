@@ -13,10 +13,11 @@ token** stream;
 void match(tokenType hope);
 int expr();
 int term();
-void putValue(int pos, int value);
-void putValue(int pos, int value);
+int literal();
 int atom();
-int var();
+void putValue(int pos, int value);
+void putValue(int pos, int value);
+
 
 int evaluate(token** instream)
 {
@@ -49,33 +50,40 @@ int expr()
 		if (!term()) val = 0;
 	}
 
-
 	return val;
 }
 
 int term()
 {
-	int val = atom();
+	int val = literal();
 
 	while (LOOKAHEADTYPE == OR)
 	{
 		match(OR);
-		if (atom()) val = 1;
+		if (literal()) val = 1;
 	}
 
 	return val;
 }
 
-int atom()
+int literal()
 {
 	int negations = 0;
-	int value;
-
 	while (LOOKAHEADTYPE == NOT) 
 	{
 		match(NOT);
 		negations = 1 - negations;
 	}
+
+	int value = atom();
+
+	if (negations) return 1 - value;
+	else return value;
+}
+
+int atom()
+{
+	int value;
 
 	if (LOOKAHEADTYPE == LPAR)
 	{
@@ -83,16 +91,11 @@ int atom()
 		value = expr();
 		match(RPAR);
 	}
-	else value = var();
+	else 
+	{
+		value = LOOKAHEAD->value;
+		match(VAR);
+	}
 
-	if (negations) return 1 - value;
-
-	return value;
-}
-
-int var()
-{
-	int value = LOOKAHEAD->value;
-	match(VAR);
 	return value;
 }
