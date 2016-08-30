@@ -17,7 +17,6 @@ token** lex()
 	char c;
 	while (1)
 	{
-		c = getc(stdin);
 		if (!tokensRemaining)
 		{
 			if ((stream = realloc(stream, (++chunks * CHUNKLENGTH) * sizeof(token*))) == NULL)
@@ -28,6 +27,8 @@ token** lex()
 			}
 			tokensRemaining = CHUNKLENGTH;
 		}
+
+		c = getc(stdin);
 		
 		//check if it's an operator or newline
 		switch (c)
@@ -65,12 +66,12 @@ token** lex()
 		name[0] = c;
 
 		int npointer;
-		for (npointer = 1; isalpha(c = getc(stdin)) && npointer < MAXNAMELENGTH; npointer++)
+		for (npointer = 1; isalnum(c = getc(stdin)) && npointer < MAXNAMELENGTH; npointer++)
 			name[npointer] = c;
 		name[npointer] = '\0';
 
 		//consume the rest of the name, if there's any left
-		while (isalpha(c)) c = getc(stdin);
+		while (isalnum(c)) c = getc(stdin);
 		ungetc(c, stdin);
 
 		//ask the symbol table for a token for this lexeme

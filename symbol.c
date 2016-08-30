@@ -19,6 +19,7 @@ int initSTable()
 	symbolsRemaining = SYMBOLSCHUNKSIZE * chunksNeeded - OPERATORS;
 	symbolPointerChunks = chunksNeeded;
 	symbolPointerIndex = OPERATORS;
+
 	if ((symbols = malloc(sizeof(token*) * symbolPointerChunks * SYMBOLSCHUNKSIZE)) == NULL)
 	{
 		fprintf(stderr, "Failed to allocate memory for the symbol table\n");
@@ -43,14 +44,15 @@ int initSTable()
 	not->type = NOT;
 	symbols[2] = not;
 
+	//parentheses have no names
 	lpar = malloc(sizeof(token));
-	lpar->name = malloc(sizeof(char) * 2);
-	strcpy(lpar->name, "(");
+	lpar->name = malloc(sizeof(char));
+	strcpy(lpar->name, "");
 	lpar->type = LPAR;
 	symbols[3] = lpar;
 
 	rpar = malloc(sizeof(token));
-	rpar->name = malloc(sizeof(char) * 2);
+	rpar->name = malloc(sizeof(char));
 	strcpy(rpar->name, "");
 	rpar->type = RPAR;
 	symbols[4] = rpar;
@@ -65,7 +67,7 @@ token* createIdentifier(char name[])
 		if (!strcmp(name, symbols[searchPointer]->name)) 
 			return symbols[searchPointer];
 
-	if (!symbolsRemaining)
+	if (!--symbolsRemaining)
 	{
 		if ((symbols = realloc(symbols, (++symbolPointerChunks * SYMBOLSCHUNKSIZE) * sizeof(token*))) == NULL)
 		{
@@ -74,7 +76,7 @@ token* createIdentifier(char name[])
 			exit(-1);
 		}
 
-		symbolsRemaining = SYMBOLSCHUNKSIZE - 1;
+		symbolsRemaining = SYMBOLSCHUNKSIZE;
 	}
 
 	token* newID = malloc(sizeof(token));
